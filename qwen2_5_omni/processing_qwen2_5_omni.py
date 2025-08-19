@@ -28,6 +28,7 @@ from transformers.image_utils import ImageInput
 from transformers.processing_utils import ImagesKwargs, ProcessingKwargs, ProcessorMixin, Unpack, VideosKwargs
 from transformers.tokenization_utils_base import AudioInput, PreTokenizedInput, TextInput
 from transformers.video_utils import VideoInput, make_batched_videos
+from transformers.models.whisper.feature_extraction_whisper import WhisperFeatureExtractor
 
 
 class Qwen2_5_OmniVideosKwargs(VideosKwargs):
@@ -166,8 +167,9 @@ class Qwen2_5OmniProcessor(ProcessorMixin):
             audio_inputs["input_features"] = audio_inputs.pop(
                 "input_features"
             )  # rename input_features to prevent conflicts later on
-            input_lengths = (audio_inputs["feature_attention_mask"].sum(-1) - 1) // 2 + 1
-            audio_lengths = iter((input_lengths - 2) // 2 + 1)
+            # (1, 128, 30000), 100Hz
+            input_lengths = (audio_inputs["feature_attention_mask"].sum(-1) - 1) // 2 + 1 # 500
+            audio_lengths = iter((input_lengths - 2) // 2 + 1) # 250
         else:
             audio_inputs = {}
             audio_lengths = iter([])
@@ -195,7 +197,9 @@ class Qwen2_5OmniProcessor(ProcessorMixin):
 
         if not isinstance(text, list):
             text = [text]
-
+            
+        text_bkp = text # ['<|im_start|>system\nYou are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of perceiving auditory and visual inputs, as well as generating text and speech.<|im_end|>\n<|im_start|>user\n<|audio_bos|><|AUDIO|><|audio_eos|><|im_end|>\n<|im_start|>assistant\n']
+        
         text = self.replace_multimodal_special_tokens(
             text,
             audio_lengths,
@@ -206,8 +210,10 @@ class Qwen2_5OmniProcessor(ProcessorMixin):
             position_id_per_seconds=position_id_per_seconds,
             seconds_per_chunk=seconds_per_chunk,
         )
+        # ['<|im_start|>system\nYou are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of perceiving auditory and visual inputs, as well as generating text and speech.<|im_end|>\n<|im_start|>user\n<|audio_bos|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|AUDIO|><|audio_eos|><|im_end|>\n<|im_start|>assistant\n']
+        import ipdb; ipdb.set_trace()
 
-        texts_inputs = self.tokenizer(text, **output_kwargs["text_kwargs"])
+        texts_inputs = self.tokenizer(text, **output_kwargs["text_kwargs"]) # (1, 277)
 
         return BatchFeature(
             data={**texts_inputs, **images_inputs, **videos_inputs, **audio_inputs},

@@ -38,8 +38,8 @@ def _launch_demo(args, model, processor):
     VOICE_LIST = ['Chelsie', 'Ethan']
     DEFAULT_VOICE = 'Chelsie'
 
-    default_system_prompt = 'You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of perceiving auditory and visual inputs, as well as generating text and speech.'
-    # default_system_prompt = 'You are a strong man, speaking in a deep voice.'
+    # default_system_prompt = 'You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of perceiving auditory and visual inputs, as well as generating text and speech.'
+    default_system_prompt = 'You are a lovely girl, who is a student of Stanford University. You like math and physics. You are a good student.'
 
     language = args.ui_language
 
@@ -109,6 +109,7 @@ def _launch_demo(args, model, processor):
         text = processor.apply_chat_template(messages, add_generation_prompt=True, tokenize=False)
 
         audios, images, videos = process_mm_info(messages, use_audio_in_video=True)
+        import ipdb; ipdb.set_trace()
 
         inputs = processor(text=text, audio=audios, images=images, videos=videos, return_tensors="pt", padding=True, use_audio_in_video=True)
         inputs = inputs.to(model.device).to(model.dtype)
