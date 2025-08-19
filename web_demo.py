@@ -10,7 +10,7 @@ import modelscope_studio.components.base as ms
 import modelscope_studio.components.antd as antd
 import gradio.processing_utils as processing_utils
 
-from transformers import Qwen2_5OmniForConditionalGeneration, Qwen2_5OmniProcessor
+from qwen2_5_omni import Qwen2_5OmniForConditionalGeneration, Qwen2_5OmniProcessor
 from gradio_client import utils as client_utils
 from qwen_omni_utils import process_mm_info
 from argparse import ArgumentParser
@@ -39,6 +39,7 @@ def _launch_demo(args, model, processor):
     DEFAULT_VOICE = 'Chelsie'
 
     default_system_prompt = 'You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of perceiving auditory and visual inputs, as well as generating text and speech.'
+    # default_system_prompt = 'You are a strong man, speaking in a deep voice.'
 
     language = args.ui_language
 
@@ -400,7 +401,7 @@ def _get_args():
                         default=False,
                         help='Automatically launch the interface in a new tab on the default browser.')
     parser.add_argument('--server-port', type=int, default=7860, help='Demo server port.')
-    parser.add_argument('--server-name', type=str, default='127.0.0.1', help='Demo server name.')
+    parser.add_argument('--server-name', type=str, default='0.0.0.0', help='Demo server name.')
     parser.add_argument('--ui-language', type=str, choices=['en', 'zh'], default='en', help='Display language for the UI.')
 
     args = parser.parse_args()
@@ -409,4 +410,5 @@ def _get_args():
 if __name__ == "__main__":
     args = _get_args()
     model, processor = _load_model_processor(args)
+    print("start demo")
     _launch_demo(args, model, processor)

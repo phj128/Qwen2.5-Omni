@@ -1,0 +1,38 @@
+# ---- Python ----
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.eggs/
+*.egg
+
+# ---- Environments ----
+*.ipynb_checkpoints
+
+# ---- IDE / Editors ----
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ---- Logs & Outputs ----
+*.log
+*.out
+*.err
+nohup.out
+
+# ---- Build / Dist ----
+build/
+dist/
+*.bak
+*.tmp
+
+# ---- Jupyter ----
+.ipynb_checkpoints/
+
+
+# ---- Mac / System ----
+.DS_Store
+Thumbs.db
